@@ -1,0 +1,38 @@
+wp_remote_get(): This function makes an HTTP GET request to fetch data from the external API (https://api.example.com/products).
+
+Error handling: The is_wp_error() function checks if the API request failed. If so, it logs the error and returns an empty array.
+
+Response parsing: If the API request succeeds, the response body (in JSON format) is retrieved using wp_remote_retrieve_body() and then converted to an array with json_decode().
+
+Validation: If the response is not an array (e.g., an error response), the function logs it and returns an empty array.
+
+Duplicate check (wc_get_product_id_by_sku()): This function checks if a product with the same SKU already exists in WooCommerce. If a product exists, the function logs a message and skips adding it again.
+
+Creating a product: A new WooCommerce product object is created using WC_Product_Simple(), assuming the product is simple (no variations). Other product types (e.g., variable products) would require a different class.
+
+Setting product data: The product’s name, price, description, and SKU are set using WooCommerce's methods like set_name(), set_regular_price(), etc.
+
+Categories: If categories are provided by the external API, the function uses set_category_ids() to assign them to the product.
+
+Image: If an image URL is provided, the function upload_image_from_url() uploads the image from the URL and associates it with the product.
+
+Save: Finally, the save() method is called to save the new product to the WooCommerce store, and the product ID is returned.
+
+download_url(): Downloads the image from the provided URL and stores it temporarily on the server.
+Error handling: If the download fails, the function returns an empty string.
+
+media_handle_sideload(): This WordPress function handles the image upload by creating a new attachment (image) in the media library.
+
+Cleanup: If the image upload fails, the temporary file is deleted using @unlink().
+Return: The function returns the attachment ID of the uploaded image or an empty string if the upload fails.
+
+
+Fetching products: The fetch_products_from_external_api() function is called to retrieve products from the API.
+
+
+Adding products: If the products array is not empty, each product is passed to the add_product_to_woocommerce() function, which handles the product creation in WooCommerce.
+
+wp_next_scheduled(): Checks if the cron event my_custom_product_sync is already scheduled. If not, it schedules it to run hourly using wp_schedule_event().
+
+
+add_action(): Associates the my_custom_product_sync event with the my_custom_cron_job() function, so that when the event is triggered, it runs the function to sync products.
