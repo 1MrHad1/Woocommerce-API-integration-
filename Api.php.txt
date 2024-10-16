@@ -1,0 +1,73 @@
+<?php
+// Fetch Data from the API
+// To Set up the API request: Using  wp_remote_get() to fetch data from the API:
+
+function fetch_api_data() {
+    $api_url = 'https://api.example.com/products';
+    $response = wp_remote_get($api_url);
+    if (is_wp_error($response)) {
+        return false;
+    }
+    return json_decode(wp_remote_retrieve_body($response), true);
+}
+
+// Store Data in an Array
+// To Process the API response: Store the fetched data in an array:
+
+function process_api_data() {
+    $data = fetch_api_data();
+    if ($data) {
+        $products = array();
+        foreach ($data as $item) {
+            $product = array(
+                'name' => $item['name'],
+                'description' => $item['description'],
+                'price' => $item['price'],
+                'sku' => $item['sku'],
+                // Add other fields as needed
+            );
+            $products[] = $product;
+        }
+        return $products;
+    }
+    return false;
+}
+
+Using  wp_insert_post() to create WooCommerce products:
+
+function upload_products($products) {
+    foreach ($products as $product) {
+        $product_id = wp_insert_post(array(
+            'post_title' => $product['name'],
+            'post_content' => $product['description'],
+            'post_status' => 'publish',
+            'post_type' => 'product',
+            'post_author' => 1,
+        ));
+        if ($product_id) {
+            update_post_meta($product_id, '_price', $product['price']);
+            update_post_meta($product_id, '_sku', $product['sku']);
+            // Add other meta fields as needed
+        }
+    }
+}
+
+
+
+// Automate the Process
+// Creating  a cron job: Schedule the process to run periodically
+function schedule_product_upload() {
+    if ( ! wp_next_scheduled( 'my_api_product_upload' ) ) {
+        wp_schedule_event( time(), 'daily', 'my_api_product_upload' );
+    }
+}
+add_action('wp', 'schedule_product_upload');
+add_action('my_api_product_upload', 'upload_products_from_api');
+function upload_products_from_api() {
+    $products = process_api_data();
+    if ($products) {
+        upload_products($products);
+    }
+}
+
+?>
